@@ -1,0 +1,36 @@
+#api-get-ndp-new
+{
+    margin-top: 10px;
+}
+#api-get-ndp-new .item
+{
+    padding: 10px 0;
+}
+#api-get-ndp-new .item .col-xs-12
+{
+    border-top: 1px solid #D5D5D5;
+    margin-top: 10px;
+}
+#api-get-ndp-new h4
+{
+    margin-left: -5px !important;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+#api-get-ndp-new h4 a
+{
+    text-decoration: none !important;
+    font-size: 17px;
+    color: #4F99C6;
+}
+#api-get-ndp-new h4 a:hover
+{
+    color: #a3a3a3;
+}
+#api-get-ndp-new .item .bg
+{
+    height: 100px;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+}
