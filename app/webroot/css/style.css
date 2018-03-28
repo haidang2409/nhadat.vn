@@ -46,6 +46,7 @@ select{width:100% !important;}
 .search-primary .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b{border-color:transparent transparent #4f99c6;}
 .search-3{background-color:transparent;padding:0px;}
 .search-primary .select2{margin-bottom:10px;}
+.search-maps .select2{margin-bottom:10px;}
 .search-primary .div-choose-type{margin-left:-15px;text-align:center;}
 .search-primary .ul-type{list-style:none;margin-left:0;display:inline-block;}
 .search-primary .ul-type li{float:left;margin-bottom:25px;}
