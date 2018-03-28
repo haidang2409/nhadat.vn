@@ -1182,19 +1182,39 @@ class ProductsController extends AppController
     {
         $url = $this->params['url'];
         //Dieu kien tim kiem
-        //Giá
-        $price_min = isset($url['price_min'])? $url['price_min']: 0;
-        $price_max = isset($url['price_max'])? $url['price_max']: 0;
+        $type = isset($url['type'])? $url['type']: '';
+        $condition_type = $type != ''? 'Transactiontype.id = ' . $type: '';
+        $price = isset($url['price'])? $url['price']: '';
+        $arr_price = explode('_', $price);
+        $price_min = isset($arr_price[0])? $arr_price[0]: 0;
+        $price_max = isset($arr_price[1])? $arr_price[1]: 0;
         $condition_price_min = ($price_min > 0)? 'Product.price >= ' . $price_min: '';
         $condition_price_max = ($price_max > 0)? 'Product.price <= ' . $price_max: '';
+        $condition_price_deal = '';
+        if($price_min == -1 && $price_max == -1)
+        {
+            $condition_price_deal = 'Product.price = 0';
+        }
         //Dien tich
-        $acreage_min = isset($url['acreage_min'])? $url['acreage_min']: 0;
-        $acreage_max = isset($url['acreage_max'])? $url['acreage_max']: 0;
+        $acreage = isset($url['acreage'])? $url['acreage']: '';
+        $arr_acreage = explode('_', $acreage);
+        $acreage_min = isset($arr_acreage[0])? $arr_acreage[0]: 0;
+        $acreage_max = isset($arr_acreage[1])? $arr_acreage[1]: 0;
         $condition_acreage_min = ($acreage_min > 0)? 'Product.acreage >= ' . $acreage_min: '';
         $condition_acreage_max = ($acreage_max > 0)? 'Product.acreage <= ' . $acreage_max: '';
-        //Tỉnh thành
+        //Direction
+        $direction_search_id = isset($url['direction'])? $url['direction']: 0;
+        $condition_direction = ($direction_search_id > 0)? 'Direction.id = ' . $direction_search_id: '';
+        //Floor
+        $floor_search = isset($url['floor_number'])? $url['floor_number']: 0;
+        $condition_floornumber = ($floor_search > 0)? 'Product.floornumber >= ' . $floor_search: '';
+        //Room
+        $room_search = isset($url['room_number'])? $url['room_number']: 0;
+        $condition_roomnumber = ($room_search > 0)? 'Product.roomnumber >= ' . $room_search: '';
+        //Province
         $province_search_id = isset($url['province'])? $url['province']: 0;
-        $condition_province = ($province_search_id > 0)? 'Province.id = ' . $province_search_id: '';
+        $condition_province = ($province_search_id > 0)? 'Province.id = ' . $province_search_id: '' ;
+
         //Set district for province
         $districts = null;
         $this->Product->Ward->District->recursive = -1;
@@ -1206,7 +1226,6 @@ class ProductsController extends AppController
         {
             $districts[$item['District']['id']] = $item['District']['districttype'] . ' ' . $item['District']['districtname'];
         }
-        $this->set(array('districts' => $districts));
         //Quan huyen
         $district_search_id = isset($url['district'])? $url['district']: 0;
         $condition_district = ($district_search_id > 0)? 'District.id = ' . $district_search_id: '';
@@ -1221,30 +1240,27 @@ class ProductsController extends AppController
         {
             $wards[$item['Ward']['id']] = $item['Ward']['wardtype'] . ' ' . $item['Ward']['wardname'];
         }
-        $this->set(array('wards' => $wards));
         //Xa phuong
         $ward_search_id = isset($url['ward'])? $url['ward']: 0;
         $condition_ward = ($ward_search_id > 0)? 'Ward.id = ' . $ward_search_id: '';
-        //Direction
-        $direction_search_id = isset($url['direction'])? $url['direction']: 0;
-        $condition_direction = ($direction_search_id > 0)? 'Direction.id = ' . $direction_search_id: '';
-        //Floor
-        $floor_search = isset($url['floornumber'])? $url['floornumber']: 0;
-        $condition_floornumber = ($floor_search > 0)? 'Product.floornumber = ' . $floor_search: '';
-        //Room
-        $room_search = isset($url['roomnumber'])? $url['roomnumber']: 0;
-        $condition_roomnumber = ($room_search > 0)? 'Product.roomnumber = ' . $room_search: '';
         //Group
-        $group_search = isset($url['group'])? $url['group']: '';
-        $condition_group = ($group_search != '')? 'Group.id = ' . $group_search: '';
+        $group_search = isset($url['group'])? $url['group']: 0;
+        $condition_group = ($group_search > 0)? 'Group.id = ' . $group_search: '';
         //category
         $category_search = isset($url['category'])? $url['category']: '';
         $condition_category = ($category_search != '')? 'CategoryProduct.id = ' . $category_search: '';
         //Key
-        $key_search = isset($url['search'])? $url['search']: 0;
-        $condition_key = ($key_search != '')? 'Product.title LIKE "%' . $key_search . '%"': '';
+        $categories = null;
+        ClassRegistry::init('Category')->recursive = -1;
+        $category = ClassRegistry::init('Category')->find('all', array(
+            'conditions' => array('groupproduct_id' => $group_search)
+        ));
+        foreach ($category as $item)
+        {
+            $categories[$item['Category']['id']] = $item['Category']['categoryname'];
+        }
         //End dieu kien tim kiem
-        /////Dieu kien mac dinh
+
         //Ngay het han
         $date = getdate();
         $cur_date = $date['year'] . '-' . $date['mon'] . '-' . $date['mday'];
@@ -1325,14 +1341,15 @@ class ProductsController extends AppController
                 'Product.paid = 1',
                 'Product.deleted = 0',
                 // 'Product.expiry >= "' . $cur_date . '"',
-                'Transactiontype.vend = 1',
                 'Product.latitude > 0',
                 'Product.longitude > 0',
                 //Dieu kien tim kiem
+                $condition_type,
                 $condition_group,
                 $condition_category,
                 $condition_price_min,
                 $condition_price_max,
+                $condition_price_deal,
                 $condition_acreage_min,
                 $condition_acreage_max,
                 $condition_province,
@@ -1341,13 +1358,9 @@ class ProductsController extends AppController
                 $condition_floornumber,
                 $condition_roomnumber,
                 $condition_ward,
-                $condition_key,
             ),
             'order' => array('Packet.sort' => 'asc', 'Product.date_paid' => 'desc'),
             'limit' => 100
-        ));
-        $this->set(array(
-            'products' => $product,
         ));
 
         //Tim kiem
@@ -1361,6 +1374,14 @@ class ProductsController extends AppController
         foreach ($province as $item){
             $provinces[$item['Province']['id']] = $item['Province']['provincename'];
         }
+        //type
+        $types = null;
+        ClassRegistry::init('Transactiontype')->recursive = -1;
+        $type = ClassRegistry::init('Transactiontype')->find('all');
+        foreach ($type as $item)
+        {
+            $types[$item['Transactiontype']['id']] = $item['Transactiontype']['nametype'];
+        }
         //Direction
         $directions = null;
         $this->Product->Direction->recursive = -1;
@@ -1369,8 +1390,14 @@ class ProductsController extends AppController
         {
             $directions[$item['Direction']['id']] = $item['Direction']['directionname'];
         }
-        //
-
+        //Group
+        $groups = null;
+        ClassRegistry::init('Group')->recursive = -1;
+        $group = ClassRegistry::init('Group')->find('all');
+        foreach ($group as $item)
+        {
+            $groups[$item['Group']['id']] = $item['Group']['groupname'];
+        }
         //Set cennter for maps
         $lat = 10.0274;
         $lng = 105.7741;
@@ -1409,7 +1436,13 @@ class ProductsController extends AppController
         }
         $this->set(array(
             'title' => 'Tìm nhà đất bán - cho thuê theo bản đồ',
-            'provinces' => $provinces,
+            'products' => $product,
+            'option_groups' => $groups,
+            'option_categories' => $categories,
+            'option_types' => $types,
+            'option_provinces' => $provinces,
+            'option_districts' => $districts,
+            'option_wards' => $wards,
             'directions' => $directions,
             'lat' => $lat,
             'lng' => $lng
@@ -2365,7 +2398,6 @@ class ProductsController extends AppController
         //Check session
         if(!$this->Session->check('Member'))
         {
-//            $this->Session->setFlash('Vui lòng đăng nhập trước khi đăng thông tin bất động sản', 'flashWarning');
             $this->redirect('/members/login');
         }
         $pid = 0;
@@ -3422,7 +3454,7 @@ class ProductsController extends AppController
                 $err_image = false;
                 if(count($images) > 20)
                 {
-                    $this->Session->setFlash('Bạn không được chọn quá 20 hình ảnh', 'flashError');
+                    $this->Session->setFlash('Không được chọn quá 20 hình ảnh', 'flashError');
                     $this->redirect($_SERVER['REQUEST_URI']);
                 }
 //                //check error image
@@ -3457,11 +3489,11 @@ class ProductsController extends AppController
                     $this->Session->setFlash('Bạn không được chọn thêm quá ' . (20 - $count_image_old) . ' hình ảnh', 'flashWarning');
                     $this->redirect($_SERVER['REQUEST_URI']);
                 }
-                elseif ($count_image_old == 0 && $count_image_choose == 0)
-                {
-                    $this->Session->setFlash('Chọn hình ảnh cho bất động sản', 'flashWarning');
-                    $this->redirect($_SERVER['REQUEST_URI']);
-                }
+//                elseif ($count_image_old == 0 && $count_image_choose == 0)
+//                {
+//                    $this->Session->setFlash('Chọn hình ảnh cho bất động sản', 'flashWarning');
+//                    $this->redirect($_SERVER['REQUEST_URI']);
+//                }
                 //
                 //Neu hinh anh khong co loi
                 if($err_image == false)
@@ -3505,8 +3537,11 @@ class ProductsController extends AppController
                     if($this->Product->save($this->request->data))//($this->request->data['Product'], array('Product.id' => $this->request->data['Product']['id'])))
                     {
                         //Update lại environment và utility
-                        $this->Product->Environment->updateAll($this->request->data['Environment'], array('product_id' => $this->Product->id));
-                        $this->Product->Utility->updateAll($this->request->data['Utility'], array('product_id' => $this->Product->id));
+                        if($product['Product']['transactiontype_id'] == 1 || $product['Product']['transactiontype_id'] == 2)
+                        {
+                            $this->Product->Environment->updateAll($this->request->data['Environment'], array('product_id' => $this->Product->id));
+                            $this->Product->Utility->updateAll($this->request->data['Utility'], array('product_id' => $this->Product->id));
+                        }
                         //Image dir //Lấy theo ngày tạo post
                         $this->Product->recursive = -1;
                         $product_saved = $this->Product->find('first', array(
@@ -3531,6 +3566,14 @@ class ProductsController extends AppController
                             $filename = $product_link.'-'.$this->Product->id.'-'.$timestamp.'-'.$i.'.'.$ext;
                             if(move_uploaded_file($image['tmp_name'], $path.DS.$filename))
                             {
+                                try
+                                {
+                                    $this->Library->img_resize($path.DS.$filename, $path.DS.$filename, 630, 450, 100, $this->path_product.DS.'watermark.png');
+                                }
+                                catch (Exception $exception)
+                                {
+
+                                }
                                 //Thumb
                                 $thumb->load($path.DS.$filename);
                                 $thumb->scale(50);
@@ -3551,12 +3594,18 @@ class ProductsController extends AppController
                             'conditions' => array('product_id' => $this->Product->id),
                             'order' => array('imagelink' => 'asc')
                         ));
+                        $image_product = '';
+                        if($image_product_save)
+                        {
+                            $image_product = $img_dir.'/'.$image_product_save['Image']['imagelink'];
+                        }
                         $update_image = array(
                             'id' => $this->Product->id,
-                            'image' => $img_dir.'/'.$image_product_save['Image']['imagelink'],
+                            'image' => $image_product,
                         );
                         $this->Product->save($update_image);
                         //Redirect
+                        $this->Session->setFlash('Đã cập nhật', 'flashSuccess');
                         $this->redirect('/admin/products');
                         //
                     }
@@ -3598,7 +3647,6 @@ class ProductsController extends AppController
             }
         }
     }
-    //
     public function admin_register_products()
     {
         if(!$this->Session->check('Admin'))
