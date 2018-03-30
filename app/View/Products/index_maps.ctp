@@ -97,7 +97,6 @@ $option_room = array(
             <div id="map" style="width: 100%; height: 600px; margin-bottom: 15px">
 
             </div>
-
             <!--            maps-->
         </div>
         <div class="col-sm-3" style="padding-top: 0 !important;">
@@ -186,12 +185,12 @@ $option_room = array(
                         'province_id': province_id
                     },
                     beforeSend: function () {
-                        $('#district').html('<option disabled selected>Đang tải</option>')
-                        $('#ward').html('<option selected>Xã phường</option>')
+                        $('#district').html('<option disabled selected>Đang tải</option>').select2({minimumResultsForSearch: -1});
+                        $('#ward').html('<option selected>Xã phường</option>').select2({minimumResultsForSearch: -1});
                     },
                     success: function(string)
                     {
-                        $('#district').html(string)
+                        $('#district').html(string).select2({minimumResultsForSearch: -1});
                     }
                 });
             }
@@ -208,11 +207,11 @@ $option_room = array(
                         'district_id': district_id
                     },
                     beforeSend: function () {
-                        $('#ward').html('<option disabled selected>Đang tải</option>');
+                        $('#ward').html('<option disabled selected>Đang tải</option>').select2({minimumResultsForSearch: -1});;
                     },
                     success: function(string)
                     {
-                        $('#ward').html(string)
+                        $('#ward').html(string).select2({minimumResultsForSearch: -1});
                     }
                 });
             }
@@ -229,11 +228,11 @@ $option_room = array(
                         'groupproduct_id': group_id
                     },
                     beforeSend: function () {
-                        $('#category').html('<option disabled selected>Đang tải</option>')
+                        $('#category').html('<option disabled selected>Đang tải</option>').select2({minimumResultsForSearch: -1});
                     },
                     success: function(string)
                     {
-                        $('#category').html(string)
+                        $('#category').html(string).select2({minimumResultsForSearch: -1});
                     }
                 });
             }
