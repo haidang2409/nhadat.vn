@@ -2251,13 +2251,11 @@ class ProductsController extends AppController
         ///
         if($this->request->is('post') || $this->request->is('put'))
         {
-            debug($this->request->data);
             $this->Product->set($this->request->data);
             if($this->Product->validates())
             {
                 $this->Product->set('member_id', $member_id);
                 $images = $this->request->data['Imagesproduct']['imagelink'];
-                debug($images);
                 $err_image = false;
                 if(count($images) > 20)
                 {

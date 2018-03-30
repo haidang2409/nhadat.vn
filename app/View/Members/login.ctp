@@ -43,7 +43,7 @@
                         <i class="fa fa-google"> </i>
                         Đăng nhập bằng Google
                     </a>
-                    <a class="btn btn-primary" href="https://www.facebook.com/dialog/oauth?client_id=177466519511280&redirect_uri=http://nhadatphong.com/login-with-facebook/" style="min-width: 220px; margin-bottom: 5px">
+                    <a class="btn btn-primary" href="https://www.facebook.com/dialog/oauth?client_id=177466519511280&redirect_uri=http://nhadatphong.com/socials/facebook_login_success" style="min-width: 220px; margin-bottom: 5px">
                         <i class="fa fa-facebook"> </i>
                         Đăng nhập bằng Facebook
                     </a>
